@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang='en'>
+<head>
+	<meta charset='utf-8'/>
+	<style>
+		.aa{
+			background: #ccc;
+		}
+	</style>
+</head>
+<body>
+	<div id="div1"></div>
+	<script src='react-0.14.7/build/react.js'></script>
+	<script src='react-0.14.7/build/react-dom.js'></script>
+	<script src='browser.js'></script>
+	<script src='PubSub.js'></script>
+	<script type='text/babel'>
+		var Commsg = React.createClass({
+		    getInitialState:function(){
+				return {
+					  content:0
+				};
+		    },
+		    componentWillMount:function(){
+		    	PubSub.subscribe('select',function(msg,data){
+		    		this.setState({
+		    			content:data.value
+		    		});
+		    	}.bind(this));
+		    },
+		    componentWillUnmount:function(){
+				PubSub.unsubscribe('select');
+		    },
+			render:function(){
+				return (
+					<div >你掌握的语言种类个数：{this.state.content}</div>
+				)
+			}
+		});
+		var Childcom = React.createClass({ 
+			render:function(){
+				var array=[];
+				this.props.arr.forEach(function(value,index,arr){
+					array.push(<label key={index}><span>{value}</span><input type='checkbox' onChange={this.props.on}/></label>);
+				}.bind(this));
+				return (<div>{array}</div>)
+			}
+		});
+		var Parcom = React.createClass({
+		    getInitialState:function(){
+		        return {
+		        count:0
+		        };
+		    },
+		    change:function(e){
+		       this.setState({
+		       	count:e.target.checked?this.state.count+ 1:this.state.count- 1
+		       });
+		    },
+			render:function(){
+				var arr=['c++','java','node'];
+			    return (
+			    <div>
+			      <h1 onClick={this.doChange}>the countis:{this.state.count}</h1>
+			      <Childcom arr={arr} on={this.change}/>
+			    </div>
+			    );
+			},
+			doChange:function(){
+				PubSub.publish('select',{
+					value:this.state.count
+				});
+		    },
+		});
+		
+		ReactDOM.render(
+		<div>
+			<Commsg />
+		    <Parcom />
+	    </div>,
+		document.getElementById('div1')
+		);
+	</script>
+</body>
+</html>
